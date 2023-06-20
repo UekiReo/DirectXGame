@@ -143,7 +143,7 @@ HRESULT Plane::Update() {
 	++cnt;
 
 	// カメラの設定
-	XMMATRIX view = XMMatrixLookAtLH({1.0f, 1.0f, -6.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f});
+	XMMATRIX view = XMMatrixLookAtLH({1.0f, 2.0f, -7.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f});
 	XMMATRIX projection =
 	    XMMatrixPerspectiveFovLH(XMConvertToRadians(60.0f), 640.0f / 480.0f, 1.0f, 20.0f);
 
@@ -151,7 +151,7 @@ HRESULT Plane::Update() {
 	XMMATRIX scale = XMMatrixScaling(3.0f, 3.0f, 1.0f);
 	XMMATRIX rotate =
 	    XMMatrixRotationX(XMConvertToRadians(90.0f + 10.0f * sin(PI * (cnt % 144) / 72.0f)));
-	rotate *= XMMatrixRotationY(-PI * (cnt % 400) / 200.0f);
+	rotate *= XMMatrixRotationY(-PI * (cnt % 500) / 250.0f);
 	XMMATRIX trans = XMMatrixTranslation(0.0f, -2.0f, 0.0f);
 
 	XMFLOAT4X4 Mat;

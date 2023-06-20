@@ -190,9 +190,9 @@ HRESULT Sphere::Update() {
 	    XMMatrixPerspectiveFovLH(XMConvertToRadians(60.0f), 640.0f / 480.0f, 1.0f, 20.0f);
 
 	// オブジェクトの回転の設定
-	XMMATRIX rotate = XMMatrixRotationY(XMConvertToRadians(static_cast<float>(Cnt % 1800)) / 5.0f);
+	XMMATRIX rotate = XMMatrixRotationY(XMConvertToRadians(static_cast<float>(Cnt % 1800)) / 18.0f);
 	XMMATRIX move = XMMatrixTranslation(
-	    0.0f, sin(PI * ((Cnt % 240) / 120.0f)) * 0.5f, sin(PI * ((Cnt % 120) / 60.0f)) * 0.5f);
+	    0.0f, sin(PI * ((Cnt % 240) / 120.0f)) * 0.5f, sin(PI * ((Cnt % 120) / 60.0f)) * 1.0f);
 
 	// ワールド変換行列
 	XMFLOAT4X4 World;

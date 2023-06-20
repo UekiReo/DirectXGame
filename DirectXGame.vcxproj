@@ -113,6 +113,7 @@
     <ClCompile Include="D3D12Maneger.cpp" />
     <ClCompile Include="Plane.cpp" />
     <ClCompile Include="scene\GameScene.cpp" />
+    <ClCompile Include="ShadowMapDebug.cpp" />
     <ClCompile Include="Sphere.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -146,6 +147,7 @@
     <ClInclude Include="math\Vector4.h" />
     <ClInclude Include="Plane.h" />
     <ClInclude Include="scene\GameScene.h" />
+    <ClInclude Include="ShadowMapDebug.h" />
     <ClInclude Include="Sphere.h" />
   </ItemGroup>
   <ItemGroup>
@@ -158,6 +160,10 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
     </FxCompile>
     <FxCompile Include="Shaders.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Effect</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Effect</ShaderType>
+    </FxCompile>
+    <FxCompile Include="ShadowMapDebug.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Effect</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Effect</ShaderType>
     </FxCompile>

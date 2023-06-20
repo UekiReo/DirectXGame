@@ -1,9 +1,11 @@
 ﻿#ifndef SPHERE_HEADER_
 #define SPHERE_HEADER_
 
+#include <DirectXMath.h>
 #include <d3d12.h>
 #include <wrl/client.h>
 
+using namespace DirectX;
 using namespace Microsoft::WRL;
 
 class Sphere {
@@ -16,7 +18,8 @@ public:
 public:
 	Sphere();
 	~Sphere() {}
-	HRESULT Initialize(ID3D12Device* device);
+	HRESULT Initialize(ID3D12Device* device, ID3D12Resource* sm);
+	HRESULT Update();
 	HRESULT Draw(ID3D12GraphicsCommandList* command_list);
 
 private:

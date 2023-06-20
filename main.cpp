@@ -10,6 +10,8 @@ constexpr LPCWSTR WND_CLASS_NAME = L"TR1_ShadowMap";
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nShowCmd) {
 	WNDCLASSEX wc{};
 	HWND hwnd{};

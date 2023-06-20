@@ -3,14 +3,15 @@
 #include <fstream>
 #include <vector>
 
-namespace {
+namespace 
+{
 constexpr float PI = 3.14159265358979323846f;
 }
 
 Sphere::Sphere()
     : vertex_buffer_{}, index_buffer_{}, constant_buffer_{}, texture_{}, dh_texture_{} {}
 
-HRESULT Sphere::Initialize(ID3D12Device* device) {
+HRESULT Sphere::Initialize(ID3D12Device* device, ID3D12Resource* sm) {
 	HRESULT hr{};
 	D3D12_HEAP_PROPERTIES heap_properties{};
 	D3D12_RESOURCE_DESC resource_desc{};
@@ -78,8 +79,7 @@ HRESULT Sphere::Initialize(ID3D12Device* device) {
 		float t{};
 		for (int j = 0; j < VERT_NUM; ++j) {
 			vb[i * VERT_NUM + j].Position = {sinf(t) * cosf(phi), cosf(t), sinf(t) * sinf(phi)};
-			vb[i * VERT_NUM + j].Normal =
-			vb[i * VERT_NUM + j].Position; // 半径1の球なので、座標がそのまま法線として使える
+			vb[i * VERT_NUM + j].Normal = vb[i * VERT_NUM + j].Position;
 			vb[i * VERT_NUM + j].UV = {i / (float)(ARC_NUM - 1), j / (float)(VERT_NUM - 1)};
 			t += td;
 		}
@@ -91,11 +91,11 @@ HRESULT Sphere::Initialize(ID3D12Device* device) {
 	int idx{};
 	for (int i = 0; i < ARC_NUM - 1; ++i) {
 		for (int j = 0; j < VERT_NUM - 1; ++j) {
-			ib[0 + idx] = (VERT_NUM * i + j);
-			ib[1 + idx] = (VERT_NUM * i + j + 1);
+			ib[1 + idx] = (VERT_NUM * i + j);
+			ib[0 + idx] = (VERT_NUM * i + j + 1);
 			ib[2 + idx] = (VERT_NUM * (i + 1) + j);
-			ib[3 + idx] = (VERT_NUM * (i + 1) + j);
-			ib[4 + idx] = (VERT_NUM * i + j + 1);
+			ib[4 + idx] = (VERT_NUM * (i + 1) + j);
+			ib[3 + idx] = (VERT_NUM * i + j + 1);
 			ib[5 + idx] = (VERT_NUM * (i + 1) + j + 1);
 			idx += 6;
 		}
@@ -140,7 +140,7 @@ HRESULT Sphere::Initialize(ID3D12Device* device) {
 
 	// テクスチャ用のデスクリプタヒープの作成
 	D3D12_DESCRIPTOR_HEAP_DESC descriptor_heap_desc{};
-	descriptor_heap_desc.NumDescriptors = 1;
+	descriptor_heap_desc.NumDescriptors = 2;
 	descriptor_heap_desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	descriptor_heap_desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	descriptor_heap_desc.NodeMask = 0;
@@ -164,6 +164,11 @@ HRESULT Sphere::Initialize(ID3D12Device* device) {
 	handle_srv = dh_texture_->GetCPUDescriptorHandleForHeapStart();
 	device->CreateShaderResourceView(texture_.Get(), &resourct_view_desc, handle_srv);
 
+	resourct_view_desc.Format = DXGI_FORMAT_R32_FLOAT;
+	handle_srv.ptr +=
+	    device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	device->CreateShaderResourceView(sm, &resourct_view_desc, handle_srv);
+
 	// 画像データの書き込み
 	D3D12_BOX box = {0, 0, 0, (UINT)width, (UINT)height, 1};
 	hr = texture_->WriteToSubresource(0, &box, &img[0], 4 * width, 4 * width * height);
@@ -174,21 +179,28 @@ HRESULT Sphere::Initialize(ID3D12Device* device) {
 	return S_OK;
 }
 
-HRESULT Sphere::Draw(ID3D12GraphicsCommandList* command_list) {
+HRESULT Sphere::Update() {
 	HRESULT hr;
 	static int Cnt{};
 	++Cnt;
 
 	// カメラの設定
-	XMMATRIX view = XMMatrixLookAtLH({0.0f, 0.0f, -5.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f});
+	XMMATRIX view = XMMatrixLookAtLH({1.0f, 1.0f, -6.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f});
 	XMMATRIX projection =
 	    XMMatrixPerspectiveFovLH(XMConvertToRadians(60.0f), 640.0f / 480.0f, 1.0f, 20.0f);
 
 	// オブジェクトの回転の設定
-	XMMATRIX rotate = XMMatrixRotationY(XMConvertToRadians(static_cast<float>(Cnt % 1800)) / 3.0f);
+	XMMATRIX rotate = XMMatrixRotationY(XMConvertToRadians(static_cast<float>(Cnt % 1800)) / 5.0f);
+	XMMATRIX move = XMMatrixTranslation(
+	    0.0f, sin(PI * ((Cnt % 240) / 120.0f)) * 0.5f, sin(PI * ((Cnt % 120) / 60.0f)) * 0.5f);
 
+	// ワールド変換行列
+	XMFLOAT4X4 World;
+	XMStoreFloat4x4(&World, XMMatrixTranspose(rotate * move));
+
+	// 全ての変換行列
 	XMFLOAT4X4 Mat;
-	XMStoreFloat4x4(&Mat, XMMatrixTranspose(rotate * view * projection));
+	XMStoreFloat4x4(&Mat, XMMatrixTranspose(rotate * move * view * projection));
 
 	XMFLOAT4X4* buffer{};
 	hr = constant_buffer_->Map(0, nullptr, (void**)&buffer);
@@ -197,10 +209,16 @@ HRESULT Sphere::Draw(ID3D12GraphicsCommandList* command_list) {
 	}
 
 	// 行列を定数バッファに書き込み
-	*buffer = Mat;
+	buffer[0] = Mat;
+	buffer[1] = World;
 
 	constant_buffer_->Unmap(0, nullptr);
 	buffer = nullptr;
+
+	return hr;
+}
+
+HRESULT Sphere::Draw(ID3D12GraphicsCommandList* command_list) {
 
 	D3D12_VERTEX_BUFFER_VIEW vertex_view{};
 	vertex_view.BufferLocation = vertex_buffer_->GetGPUVirtualAddress();
@@ -216,10 +234,9 @@ HRESULT Sphere::Draw(ID3D12GraphicsCommandList* command_list) {
 	command_list->SetGraphicsRootConstantBufferView(0, constant_buffer_->GetGPUVirtualAddress());
 
 	// テクスチャをシェーダのレジスタにセット
-	ID3D12DescriptorHeap* heaps[] = {dh_texture_.Get()};
-	command_list->SetDescriptorHeaps(_countof(heaps), heaps);
+	command_list->SetDescriptorHeaps(1, dh_texture_.GetAddressOf());
 	command_list->SetGraphicsRootDescriptorTable(
-	    1, dh_texture_->GetGPUDescriptorHandleForHeapStart());
+	    2, dh_texture_->GetGPUDescriptorHandleForHeapStart());
 
 	// インデックスを使用し、トライアングルリストを描画
 	command_list->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);

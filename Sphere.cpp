@@ -180,12 +180,12 @@ HRESULT Sphere::Draw(ID3D12GraphicsCommandList* command_list) {
 	++Cnt;
 
 	// カメラの設定
-	XMMATRIX view = XMMatrixLookAtLH({0.0f, 0.0f, -3.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f});
+	XMMATRIX view = XMMatrixLookAtLH({0.0f, 0.0f, -5.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f});
 	XMMATRIX projection =
 	    XMMatrixPerspectiveFovLH(XMConvertToRadians(60.0f), 640.0f / 480.0f, 1.0f, 20.0f);
 
 	// オブジェクトの回転の設定
-	XMMATRIX rotate = XMMatrixRotationY(XMConvertToRadians(static_cast<float>(Cnt % 1800)) / 5.0f);
+	XMMATRIX rotate = XMMatrixRotationY(XMConvertToRadians(static_cast<float>(Cnt % 1800)) / 3.0f);
 
 	XMFLOAT4X4 Mat;
 	XMStoreFloat4x4(&Mat, XMMatrixTranspose(rotate * view * projection));

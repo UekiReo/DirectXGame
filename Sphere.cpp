@@ -192,7 +192,7 @@ HRESULT Sphere::Update() {
 	// オブジェクトの回転の設定
 	XMMATRIX rotate = XMMatrixRotationY(XMConvertToRadians(static_cast<float>(Cnt % 1800)) / 18.0f);
 	XMMATRIX move = XMMatrixTranslation(
-	    0.0f, sin(PI * ((Cnt % 240) / 120.0f)) * 0.5f, sin(PI * ((Cnt % 120) / 60.0f)) * 1.0f);
+	    0.0f, sin(PI * ((Cnt % 240) / 120.0f)) * 0.5f, sin(PI * ((Cnt % 120) / 60.0f)) * 0.5f);
 
 	// ワールド変換行列
 	XMFLOAT4X4 World;
